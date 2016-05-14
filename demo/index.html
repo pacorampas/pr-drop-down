@@ -12,24 +12,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>pr-drop-down Demo</title>
+    <title>pr-drop Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="../pr-drop.html">
     <link rel="import" href="../pr-drop-down.html">
   </head>
   <body unresolved>
     <button id="trigger">Trigger</button>
-    <pr-drop-down id="dropDown">
-      <h2>Hello pr-drop-down</h2>
+    <pr-drop id="drop">
+      <h2>Hello pr-drop</h2>
       <p>Como va la vida ahora que ya podemos tener un texto aquí escrito</p>
-    </pr-drop-down>
+    </pr-drop>
     <div>Hi</div>
+    <pr-drop-down id="dropDown" selected="7" style="margin-left: 100px">
+      <pr-option value="Opción 1">Opción 1</pr-option>
+      <pr-option value="Opción 2">Opción 2</pr-option>
+      <pr-option value="Opción 3">Opción 3</pr-option>
+    </pr-drop-down>
   </body>
   <script>
     var trigger = document.getElementById('trigger');
-    var dropDown = document.getElementById('dropDown');
+    var drop = document.getElementById('drop');
 
     trigger.addEventListener('click', function() {
-      dropDown.open = !dropDown.open;
-    })
+      drop.opened = !drop.opened;
+    });
   </script>
 </html>

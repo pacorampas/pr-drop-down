@@ -1,0 +1,236 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <!-- Step 1: import the element to test -->
+    <link rel="import" href="../pr-drop-down.html">
+  </head>
+  <body>
+
+    <!-- You can use the document as a place to set up your fixtures. -->
+    <test-fixture id="pr-drop-down-fixture">
+      <template>
+        <pr-drop-down selected="2">
+          <pr-option>Option 1</pr-option>
+          <pr-option>Option 2</pr-option>
+          <pr-option>Option 3</pr-option>
+          <pr-option>Option 4</pr-option>
+        </pr-dro-downp>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      suite('function setSelected()', function() {
+
+        var prDropDown;
+
+        setup(function() {
+          prDropDown = fixture('pr-drop-down-fixture');
+        });
+
+
+        test('when newActive is 1 the item in pos 1 into this.items should be '+
+           'active', function(done) {
+          setTimeout(function() {
+            flush(function() {
+              prDropDown.setSelected(1, 0);
+
+              console.log(prDropDown.items);
+              assert.isTrue(prDropDown.items[1].node.selected, 'the item[1] should be '+
+                  'selected');
+              assert.isTrue(!prDropDown.items[0].node.selected, 'the item[0] shouldn\'t be '+
+                  'selected');
+              done();
+            });
+          }, 1000);
+        });
+
+        test('when selected change setSelected is called', function() {
+          sinon.stub(prDropDown, 'setSelected', function foo() {});
+          prDropDown.selected = 1;
+          assert.isTrue(prDropDown.setSelected.called);
+        });
+
+        test('when newActive is < 1 should change to 0', function() {
+          prDropDown.setSelected(-1, 0);
+          assert.isTrue(prDropDown.items[0].node.selected, 'the item[0] '+
+            'should be selected');
+        });
+
+        test('when newActive is > this.items.length should change to 0', function() {
+          prDropDown.setSelected(50, 0);
+          assert.isTrue(prDropDown.items[0].node.selected, 'the item[0] '+
+            'should be selected');
+        });
+
+        test('when oldActive is < 1 should change to 0', function() {
+          prDropDown.selected = 0;
+          prDropDown.setSelected(2, -1);
+          assert.isTrue(prDropDown.items[2].node.selected, 'the item[0] '+
+            'should be selected');
+          assert.isTrue(!prDropDown.items[0].node.selected, 'the item[0] '+
+            'should be unselected');
+        });
+
+        test('when newActive is > this.items.length should change to 0', function() {
+          prDropDown.selected = 0;
+          prDropDown.setSelected(2, 50);
+          assert.isTrue(prDropDown.items[2].node.selected, 'the item[2] should be '+
+              'selected');
+          assert.isTrue(!prDropDown.items[0].node.selected, 'the item[0] should be '+
+              'unselected');
+        });
+
+      });
+
+      suite('function _initNewChildNodeAdded', function() {
+
+        var prDropDown;
+
+        setup(function() {
+          prDropDown = fixture('pr-drop-down-fixture');
+        });
+
+
+        test('add child to this.items and add index to node', function() {
+          var prOptionNode = document.createElement('pr-option');
+          var textnode = document.createTextNode('new option');
+          prOptionNode.appendChild(textnode);
+
+          var oldLength = prDropDown.items.length;
+          prDropDown._initNewChildNodeAdded([prOptionNode]);
+          var newLength = prDropDown.items.length;
+          var index = prDropDown.items[newLength-1].node.getAttribute('index');
+
+          assert.equal(newLength, oldLength+1);
+          assert.equal(newLength-1, index);
+        });
+
+        test('when selected change setSelected is called', function() {
+          sinon.stub(prDropDown, 'setSelected', function foo() {});
+          prDropDown.selected = 1;
+          assert.isTrue(prDropDown.setSelected.called);
+        });
+
+        test('when newActive is < 1 should change to 0', function() {
+          prDropDown.setSelected(-1, 0);
+          assert.isTrue(prDropDown.items[0].node.selected, 'the item[0] '+
+            'should be selected');
+        });
+
+        test('when newActive is > this.items.length should change to 0',
+            function() {
+          prDropDown.setSelected(50, 0);
+          assert.isTrue(prDropDown.items[0].node.selected, 'the item[0] '+
+            'should be selected');
+        });
+
+        test('when oldActive is < 1 should change to 0', function() {
+          prDropDown.selected = 0;
+          prDropDown.setSelected(2, -1);
+          assert.isTrue(prDropDown.items[2].node.selected, 'the item[0] '+
+            'should be selected');
+          assert.isTrue(!prDropDown.items[0].node.selected, 'the item[0] '+
+            'should be unselected');
+        });
+
+        test('when newActive is > this.items.length should change to 0',
+            function() {
+          prDropDown.selected = 0;
+          prDropDown.setSelected(2, 50);
+          assert.isTrue(prDropDown.items[2].node.selected, 'the item[2] should be '+
+              'selected');
+          assert.isTrue(!prDropDown.items[0].node.selected, 'the item[0] should be '+
+              'unselected');
+        });
+
+      });
+
+      suite('function _handleTap', function() {
+        var prDropDown;
+        var prDrop;
+
+        setup(function() {
+          prDropDown = fixture('pr-drop-down-fixture');
+          prDropDown.selected = 2;
+          prDrop = prDropDown.querySelector('pr-drop');
+          prDrop.opened = false;
+        });
+
+        test('tapping on pr-drop-down pr-drop toggle close', function() {
+          prDropDown.dispatchEvent(new CustomEvent('tap', {bubbles: true}));
+          assert.isTrue(prDrop.opened, 'opened is true');
+          prDropDown.dispatchEvent(new CustomEvent('tap', {bubbles: true}));
+          assert.isTrue(!prDrop.opened, 'opened is false');
+        });
+
+        test('tapping on pr-option change selected and pr-drop is closed',
+            function() {
+          var prOption = prDropDown.items[0].node;
+          var index = prOption.getAttribute('index');
+          prOption.dispatchEvent(new CustomEvent('tap', {bubbles: true}));
+          assert.isTrue(!prDrop.opened, 'opened is false');
+        });
+      });
+
+      suite('function _thereAreItems', function() {
+        var prDropDown;
+        var prDrop;
+
+        setup(function() {
+          prDropDown = fixture('pr-drop-down-fixture');
+        });
+
+        test('when there are items is true', function() {
+          assert.isTrue(prDropDown._thereAreItems(), 'is true');
+        });
+
+        test('when there isn\'t items is false', function() {
+          prDropDown.items = [];
+          assert.isTrue(!prDropDown._thereAreItems(), 'is false');
+        });
+
+      });
+
+      suite('function _indexIntoArray', function() {
+        var prDropDown;
+        var prDrop;
+
+        setup(function() {
+          prDropDown = fixture('pr-drop-down-fixture');
+        });
+
+        test('when the index < 0 is false', function() {
+          assert.isTrue(!prDropDown._indexIntoArray(-1), 'is false');
+        });
+
+        test('when the index >= itmes.length is false', function() {
+          var length = prDropDown.length;
+          assert.isTrue(!prDropDown._indexIntoArray(length), 'is false');
+        });
+
+        test('when the index > 0 && index < itmes.length-1 is true', function() {
+          assert.isTrue(prDropDown._indexIntoArray(2), 'is true');
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>

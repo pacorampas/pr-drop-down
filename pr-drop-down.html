@@ -9,9 +9,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="./pr-drop.html">
+<link rel="import" href="./pr-option.html">
 
 <!--
-An element providing a solution to no problem in particular.
+An element to select between a range of options
 
 Example:
 
@@ -19,8 +21,9 @@ Example:
 
 Example:
 
-    <pr-drop-down>
-      <h2>Hello pr-drop-down</h2>
+    <pr-drop-down selected="index">
+      <pr-option>Value</pr-option>
+      <pr-option>Value 2</pr-option>
     </pr-drop-down>
 
 @demo demo/index.html
@@ -31,28 +34,39 @@ Example:
   <template>
     <style>
       :host {
-        display: block;
         position: absolute;
-        box-sizing: border-box;
-        background: #f9f9f9;
-        border: 1px solid #eee;
-        border-radius: 3px;
-        padding: 10px 20px;
-        opacity: 0;
-        transition: opacity 1s;
+        display: inline-block;
       }
 
-      :host[entry] {
-        opacity: 1;
+      #dropDownTrigger {
+        background: #eee;
+        border: solid 1px #ddd;
+        font-size: 14px;
+        border-radius: 5px;
       }
 
-      :host[exit] {
-        display: none;
+      #triangle {
+        fill: #000;
+        width: 16px;
+        vertical-align: top;
+        transform: rotate(90deg);
+      }
+
+      #dropBox {
+        position: relative;
       }
     </style>
-
-    <content></content>
-
+    <button id="dropDownTrigger">
+      {{value}}
+      <svg id="triangle" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path d="M-838-2232H562v3600H-838z" fill="none"/>
+        <path d="M16 10v28l22-14z"/>
+        <path d="M0 0h48v48H0z" fill="none"/>
+      </svg>
+    </button>
+    <pr-drop id="dropBox">
+      <content id="content"></content>
+    </pr-drop>
   </template>
 
   <script>
@@ -60,71 +74,126 @@ Example:
       is: 'pr-drop-down',
 
       properties: {
-        open: {
-          type: Boolean,
-          value: false,
-          notify: false,
+        /**
+         * `items` are the options that exist into element. Each item have
+         * {node: htmlElementNode }. The items have a index as attribute,
+         * it is automatically inserted. The selected item have a selected
+         * atribute.
+         *
+         * @type Array
+         */
+        items: {
+          type: Array,
+          value: []
+        },
+        /**
+         * `value` is the label of selected option
+         *
+         * @type String
+         */
+        value: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+        /**
+         * `selected` is the index of selected option
+         *
+         * @type Number
+         */
+        selected: {
+          type: Number,
+          value: 0,
+          notify: true,
           reflectToAttribute: true,
-          observer: '_obervingOpenedChanges'
-        },
-        exit: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
-        },
-        entry: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
+          observer: 'setSelected' //TODO add this observer after _initNewChildNodesAdded
         }
       },
 
-      _obervingOpenedChanges: function(newValue, oldValue) {
-        if (typeof oldValue === 'undefined') {
-          return;
-        }
-
-        if (this.exit) {
-          this.exit = !this.open;
-        }
-
-        setTimeout(()=> {
-          this.entry = !this.entry;
-          this.addEventListener('transitionend', () => {
-            if (!this.entry) {
-              this.exit = true;
-            }
-          })
-        }, 10);
+      listeners: {
+        tap: '_handleTap'
       },
-
-      // Element Lifecycle
 
       ready: function() {
-
-        // `ready` is called after all elements have been configured, but
-        // propagates bottom-up. This element's children are ready, but parents
-        // are not.
-        //
-        // This is the point where you should make modifications to the DOM (when
-        // necessary), or kick off any processes the element wants to perform.
-      },
-
-      attached: function() {
-        // `attached` fires once the element and its parents have been inserted
-        // into a document.
-        //
-        // This is a good place to perform any work related to your element's
-        // visual state or active behavior (measuring sizes, beginning animations,
-        // loading resources, etc).
+        var contentNode = Polymer.dom(this.$.content);
+        this._observer = contentNode.observeNodes((info) => {
+          this._initNewChildNodeAdded(info.addedNodes);
+        });
       },
 
       detached: function() {
-        // The analog to `attached`, `detached` fires when the element has been
-        // removed from a document.
-        //
-        // Use this to clean up anything you did in `attached`.
+        Polymer.dom(this.$.content).unobserveNodes(this._observer);
+      },
+
+      /**
+       * Sets the new item selected and clean the previous selection.
+       *
+       * @param {number} the index of the new item selected.
+       * @param {number} the index of the prev item selected.
+       *
+       */
+      //TODO controlar si selected no es un numeros
+      setSelected: function(newSelected, oldSelected) {
+        if (!this._thereAreItems()) {
+          return;
+        }
+
+        if (!oldSelected || !this._indexIntoArray(oldSelected)) {
+          oldSelected = 0;
+        }
+
+        if (!this._indexIntoArray(newSelected)) {
+          newSelected = 0;
+        }
+
+        this.items[oldSelected].node.selected = false;
+        this.items[newSelected].node.selected = true;
+        this.value = this.items[newSelected].node.textContent;
+      },
+
+      /**
+       * Sets options inside drop down into this.items.
+       *
+       * @param {Array<HTMLElements>=}
+       *
+       */
+      _initNewChildNodeAdded: function(addedNodes) {
+        var nodes = addedNodes;
+
+        for (var index in nodes) {
+          if (nodes[index].nodeName === "#text") {
+            continue;
+          }
+
+          this.items.push({
+            node: nodes[index]
+          });
+          nodes[index].setAttribute('index', this.items.length-1);
+        }
+        this.setSelected(this.selected);
+      },
+
+      _handleTap: function(e) {
+        e.stopPropagation();
+        var selected = e.target.getAttribute('index');
+
+        if (selected) {
+          this.selected = selected;
+          this.$.dropBox.opened = false;
+        } else {
+          this.$.dropBox.opened = !this.$.dropBox.opened;
+        }
+      },
+
+      _thereAreItems: function() {
+        return (this.items.length > 0);
+      },
+
+      //to know if the array have this index
+      _indexIntoArray: function(index) {
+        return index >= 0 && index < this.items.length;
       }
+
     });
   </script>
 </dom-module>

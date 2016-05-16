@@ -15,16 +15,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <title>pr-drop Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-    <link rel="import" href="../pr-drop-down.html">
+    <link rel="import" href="../pr-drop.html">
   </head>
   <body unresolved>
     <demo-snippet class="centered-demo">
       <template>
-        <pr-drop-down id="dropDown" selected="7">
-          <pr-option value="Opción 1">Opción 1</pr-option>
-          <pr-option value="Opción 2">Opción 2</pr-option>
-          <pr-option value="Opción 3">Opción 3</pr-option>
-        </pr-drop-down>
+        <button id="trigger">Trigger</button>
+        <pr-drop id="drop">
+          <h2>Hello pr-drop</h2>
+          <p>Como va la vida ahora que ya podemos tener un texto aquí escrito</p>
+        </pr-drop>
+        <script>
+          var trigger = document.getElementById('trigger');
+          var drop = document.getElementById('drop');
+
+          trigger.addEventListener('click', function() {
+            drop.opened = !drop.opened;
+          });
+        </script>
       </template>
     </demo-snippet>
   </body>

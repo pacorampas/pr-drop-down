@@ -23,7 +23,7 @@ Example:
       Value
     </pr-option>
 
-@demo demo/index.html
+@demo demo/pr-option.html
 @hero hero.svg
 -->
 
@@ -32,11 +32,16 @@ Example:
     <style>
       :host {
         display: block;
-        padding: 10px 0;
+        padding: 10px;
         cursor: pointer;
       }
       :host[selected] {
-        background: red;
+        font-weight: bold;
+        background: #ddd;
+      }
+      :host:not([selected]):hover,
+      :host:not([selected]):active {
+        background: #eee;
       }
     </style>
     <content></content>

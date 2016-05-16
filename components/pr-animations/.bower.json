@@ -1,0 +1,35 @@
+{
+  "name": "pr-animations",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "seed"
+  ],
+  "main": "pr-animations.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "^4.0.0"
+  },
+  "_release": "14ee563e4d",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "14ee563e4d0e77f6202f0b7b73abc1e93233f7b9"
+  },
+  "_source": "https://github.com/pacorampas/pr-animations.git",
+  "_target": "master",
+  "_originalSource": "https://github.com/pacorampas/pr-animations.git"
+}

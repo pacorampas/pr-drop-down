@@ -1,0 +1,200 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="./pr-drop.html">
+<link rel="import" href="./pr-option.html">
+
+<!--
+An element to select between a range of options
+
+Example:
+
+    <pr-drop-down></pr-drop-down>
+
+Example:
+
+    <pr-drop-down selected="index">
+      <pr-option>Value</pr-option>
+      <pr-option>Value 2</pr-option>
+    </pr-drop-down>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="pr-drop-down">
+  <template>
+    <style>
+      :host {
+        position: relative;
+        display: inline-block;
+      }
+
+      #dropDownTrigger {
+        background: #eee;
+        border: solid 1px #ddd;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+
+      #triangle {
+        fill: #000;
+        width: 16px;
+        vertical-align: top;
+        transform: rotate(90deg);
+      }
+
+      #dropBox {
+        padding-right: 0;
+        padding-left: 0;
+      }
+    </style>
+    <button id="dropDownTrigger">
+      {{value}}
+      <svg id="triangle" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path d="M-838-2232H562v3600H-838z" fill="none"/>
+        <path d="M16 10v28l22-14z"/>
+        <path d="M0 0h48v48H0z" fill="none"/>
+      </svg>
+    </button>
+    <pr-drop id="dropBox">
+      <content id="content"></content>
+    </pr-drop>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'pr-drop-down',
+
+      properties: {
+        /**
+         * `items` are the options that exist into element. Each item have
+         * {node: htmlElementNode }. The items have a index as attribute,
+         * it is automatically inserted. The selected item have a selected
+         * atribute.
+         *
+         * @type Array
+         */
+        items: {
+          type: Array,
+          value: []
+        },
+        /**
+         * `value` is the label of selected option
+         *
+         * @type String
+         */
+        value: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+        /**
+         * `selected` is the index of selected option
+         *
+         * @type Number
+         */
+        selected: {
+          type: Number,
+          value: 0,
+          notify: true,
+          reflectToAttribute: true,
+          observer: 'setSelected' //TODO add this observer after _initNewChildNodesAdded
+        }
+      },
+
+      listeners: {
+        tap: '_handleTap'
+      },
+
+      ready: function() {
+        var contentNode = Polymer.dom(this.$.content);
+        this._observer = contentNode.observeNodes((info) => {
+          this._initNewChildNodeAdded(info.addedNodes);
+        });
+      },
+
+      detached: function() {
+        Polymer.dom(this.$.content).unobserveNodes(this._observer);
+      },
+
+      /**
+       * Sets the new item selected and clean the previous selection.
+       *
+       * @param {number} the index of the new item selected.
+       * @param {number} the index of the prev item selected.
+       *
+       */
+      //TODO controlar si selected no es un numeros
+      setSelected: function(newSelected, oldSelected) {
+        if (!this._thereAreItems()) {
+          return;
+        }
+
+        if (!oldSelected || !this._indexIntoArray(oldSelected)) {
+          oldSelected = 0;
+        }
+
+        if (!this._indexIntoArray(newSelected)) {
+          newSelected = 0;
+        }
+
+        this.items[oldSelected].node.selected = false;
+        this.items[newSelected].node.selected = true;
+        this.value = this.items[newSelected].node.textContent;
+      },
+
+      /**
+       * Sets options inside drop down into this.items.
+       *
+       * @param {Array<HTMLElements>=}
+       *
+       */
+      _initNewChildNodeAdded: function(addedNodes) {
+        var nodes = addedNodes;
+
+        for (var index in nodes) {
+          if (nodes[index].nodeName === "#text") {
+            continue;
+          }
+
+          this.items.push({
+            node: nodes[index]
+          });
+          nodes[index].setAttribute('index', this.items.length-1);
+        }
+        this.setSelected(this.selected);
+      },
+
+      _handleTap: function(e) {
+        e.stopPropagation();
+        var selected = e.target.getAttribute('index');
+
+        if (selected) {
+          this.selected = selected;
+          this.$.dropBox.opened = false;
+        } else {
+          this.$.dropBox.opened = !this.$.dropBox.opened;
+        }
+      },
+
+      _thereAreItems: function() {
+        return (this.items.length > 0);
+      },
+
+      //to know if the array have this index
+      _indexIntoArray: function(index) {
+        return index >= 0 && index < this.items.length;
+      }
+
+    });
+  </script>
+</dom-module>

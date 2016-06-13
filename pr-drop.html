@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../pr-animations/pr-fade-effect.html">
 <link rel="import" href="../pr-animations/pr-animations-behavior.html">
 
 <!--
@@ -55,7 +56,7 @@ Example:
     Polymer({
       is: 'pr-drop',
 
-      behaviors: [PrAnimationsBehavior],
+      behaviors: [PrFadeEffect, PrAnimationsBehavior],
 
       properties: {
         /**
@@ -69,12 +70,16 @@ Example:
           notify: false,
           reflectToAttribute: true,
           observer: '_obervingOpenedChanges'
+        },
+        player: {
+          type: Object,
+          value: null
         }
       },
 
       created: function() {
-        this.fade();
-        this.player.pause();
+        var effect = this.fadeEffect();
+        this.player = this.createAnimation(effect);
       },
 
       detached: function() {
